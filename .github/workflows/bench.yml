@@ -79,6 +79,10 @@ jobs:
         run: Rscript R/run_grid.R "$MAX_P" 3 "results/grid-${{ matrix.name }}.csv"
         shell: bash
 
+      - name: Time to fixed accuracy
+        run: Rscript R/accuracy_grid.R "$MAX_P" 1e-6 "results/accuracy-${{ matrix.name }}.csv"
+        shell: bash
+
       - uses: actions/upload-artifact@v4
         with:
           name: results-${{ matrix.name }}
