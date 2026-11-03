@@ -33,17 +33,19 @@ cases <- grid_cases(max_p)
 res <- list()
 for (ci in seq_len(nrow(cases))) {
   row <- cases[ci, ]
-  X <- sim_case(row$p, row$n, kappa=row$kappa, graph=row$graph, tied=row$tied)
-  base <- NULL
-  for (cfg in names(CONFIGS)) {
+  X <- sim_case(row$p, row$n, kappa=row$kappa, graph=row$graph, tied=row$tied, clr=row$clr)
+  base <- list()
+  cfgs <- configs_for(row)
+  for (cfg in names(cfgs)) {
+    fam <- cfgs[[cfg]]$family
     for (k in seq_len(reps)) {
-      fit <- fit_once(X, row, CONFIGS[[cfg]]$opts)
-      if (cfg == 'baseline' && is.null(base)) base <- fit
-      err <- max(mapply(rel_err, fit$icov, base$icov), mapply(rel_err, fit$resid, base$resid))
+      fit <- fit_once(X, row, cfgs[[cfg]]$opts)
+      if (is.null(base[[fam]])) base[[fam]] <- fit   # first config of a family is its baseline
+      err <- max(mapply(rel_err, fit$icov, base[[fam]]$icov), mapply(rel_err, fit$resid, base[[fam]]$resid))
       iters <- if (!is.null(fit$iter)) sum(fit$iter) else NA
       hit_max <- if (!is.null(fit$iter)) any(fit$iter >= if (row$p >= 1000) 300 else 1000) else NA
       res[[length(res) + 1]] <- data.frame(id=row$id, case=row$case, p=row$p, n=row$n, config=cfg,
-        kind=CONFIGS[[cfg]]$kind, rep=k, seconds=fit$elapsed, iters=iters, hit_maxiter=hit_max,
+        family=fam, kind=cfgs[[cfg]]$kind, clr=row$clr, rep=k, seconds=fit$elapsed, iters=iters, hit_maxiter=hit_max,
         max_rel_err=err)
       cat(sprintf("%-28s %-14s rep %d  %7.3fs  iters %s  err %.1e\n", row$id, cfg, k, fit$elapsed, iters, err))
     }
@@ -53,5 +55,6 @@ res <- do.call(rbind, res)
 res$lapack <- La_library(); res$blas <- extSoftVersion()[['BLAS']]
 res$sys <- paste(Sys.info()[['sysname']], Sys.info()[['machine']])
 res$runner <- Sys.getenv("BENCH_RUNNER", "local")
+res$spieceasi_ref <- Sys.getenv("BENCH_SPIECEASI_REF", NA)
 dir.create(dirname(out), showWarnings=FALSE, recursive=TRUE)
 write.csv(res, out, row.names=FALSE)

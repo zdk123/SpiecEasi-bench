@@ -16,7 +16,8 @@ prec_with_condition <- function(graph, kappa) {
   ev$vectors %*% diag(d) %*% t(ev$vectors)
 }
 
-sim_case <- function(p, n, r=2, kappa=100, graph='band', tied=FALSE, seed=1) {
+sim_case <- function(p, n, r=2, kappa=100, graph='band', tied=FALSE, seed=1,
+                     clr=FALSE, depth=5000) {
   set.seed(seed)
   g <- make_graph(graph, p, p)
   Prec <- if (kappa <= 100) graph2prec(g, targetCondition=kappa) else prec_with_condition(g, kappa)
@@ -27,7 +28,14 @@ sim_case <- function(p, n, r=2, kappa=100, graph='band', tied=FALSE, seed=1) {
     # orthogonal loadings of equal norm -> tied top eigenvalues of L
     q <- qr.Q(qr(matrix(rnorm(p * r), p, r))); q * sqrt(p) * .3
   } else matrix(rnorm(p * r, sd=.5), p, r)
-  Z + U %*% t(W)
+  X <- Z + U %*% t(W)
+  if (!clr) return(X)
+  # compositional counts: log-normal abundances, multinomial sampling at a fixed depth,
+  # then SpiecEasi's own clr pipeline (the input spiec.easi passes to the SLR solver)
+  mu <- rnorm(p, sd=1)
+  P  <- exp(sweep(X, 2, mu, '+'))
+  counts <- t(apply(P, 1, function(pr) rmultinom(1, depth, pr / sum(pr))))
+  SpiecEasi:::.spiec.easi.norm(counts)
 }
 
 grid_cases <- function(max_p=Inf) {
@@ -48,6 +56,12 @@ grid_cases <- function(max_p=Inf) {
   extra <- rows[rows$case %in% c('ill 1e4', 'ill 1e6'), ]
   extra$n <- extra$p / 2; extra$case <- paste(extra$case, 'n<p')
   rows <- rbind(rows, extra)
+  rows$clr <- FALSE
+  # clr-transformed count data, the input spiec.easi actually gives the solver
+  clr_rows <- data.frame(case=c('clr n<p', 'clr n<p', 'clr n<p', 'clr n>p', 'clr n>p'),
+                         p=c(20, 100, 300, 100, 300), n=c(10, 50, 150, 500, 1500),
+                         kappa=100, graph='band', tied=FALSE, mode='rank', clr=TRUE)
+  rows <- rbind(rows, clr_rows)
   rows$id <- sprintf('%s_p%d_n%d', gsub('[^a-z0-9]+', '-', rows$case), rows$p, rows$n)
   rows[rows$p <= max_p, ]
 }

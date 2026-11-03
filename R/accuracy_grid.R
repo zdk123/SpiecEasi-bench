@@ -17,12 +17,20 @@ out   <- if (length(args) >= 3) args[3] else "results/accuracy.csv"
 if (requireNamespace("RhpcBLASctl", quietly=TRUE) && nzchar(Sys.getenv("BENCH_THREADS")))
   RhpcBLASctl::blas_set_num_threads(as.integer(Sys.getenv("BENCH_THREADS")))
 
+## Each family is a separate estimator with its own reference solution; compositional
+## configurations run on clr input only.
+ALL <- list(partial.eig=TRUE, fast.R=TRUE, anderson=10, path.order='sparse_first')
+FAMILIES <- list(default=list(), compositional=list(compositional=TRUE))
 CONFIGS <- list(
-  baseline     = list(),
-  exact_kernels = list(partial.eig=TRUE, fast.R=TRUE),
-  anderson     = list(anderson=10),
-  all          = list(partial.eig=TRUE, fast.R=TRUE, anderson=10, path.order='sparse_first')
+  baseline      = list(family='default', opts=list()),
+  exact_kernels = list(family='default', opts=list(partial.eig=TRUE, fast.R=TRUE)),
+  anderson      = list(family='default', opts=list(anderson=10)),
+  all           = list(family='default', opts=ALL),
+  comp_baseline = list(family='compositional', opts=list(compositional=TRUE)),
+  comp_anderson = list(family='compositional', opts=list(compositional=TRUE, anderson=10)),
+  comp_all      = list(family='compositional', opts=c(list(compositional=TRUE), ALL))
 )
+MAXITER <- 5e4
 
 rel_err <- function(a, b) norm(as.matrix(a) - as.matrix(b), 'F') / max(1, norm(as.matrix(b), 'F'))
 
@@ -41,18 +49,29 @@ cases <- cases[!duplicated(cases$case) | cases$p > 100, ]
 res <- list()
 for (ci in seq_len(nrow(cases))) {
   row <- cases[ci, ]
-  X <- sim_case(row$p, row$n, kappa=row$kappa, graph=row$graph, tied=row$tied)
-  ref <- fit(X, row, list(anderson=10, partial.eig=TRUE, fast.R=TRUE, tol=1e-10, maxiter=1e5))
+  X <- sim_case(row$p, row$n, kappa=row$kappa, graph=row$graph, tied=row$tied, clr=row$clr)
+  fams <- if (isTRUE(row$clr)) names(FAMILIES) else 'default'
+  refs <- lapply(setNames(fams, fams), function(fm)
+    fit(X, row, c(FAMILIES[[fm]], list(anderson=10, partial.eig=TRUE, fast.R=TRUE,
+                                       tol=1e-10, maxiter=1e5))))
   for (cfg in names(CONFIGS)) {
-    f <- fit(X, row, c(CONFIGS[[cfg]], list(tol=tol, maxiter=1e5)))
+    fm <- CONFIGS[[cfg]]$family
+    if (!fm %in% fams) next
+    ref <- refs[[fm]]
+    f <- fit(X, row, c(CONFIGS[[cfg]]$opts, list(tol=tol, maxiter=MAXITER)))
     err <- max(mapply(rel_err, f$icov, ref$icov), mapply(rel_err, f$resid, ref$resid))
-    res[[length(res) + 1]] <- data.frame(id=row$id, case=row$case, p=row$p, n=row$n, config=cfg,
-      tol=tol, seconds=f$elapsed, steps=sum(f$iter), max_rel_err=err)
-    cat(sprintf("%-28s %-14s %8.2fs  steps %6d  err %.1e\n", row$id, cfg, f$elapsed, sum(f$iter), err))
+    capped <- sum(f$iter >= MAXITER)
+    ref_capped <- sum(ref$iter >= 1e5)
+    res[[length(res) + 1]] <- data.frame(id=row$id, case=row$case, p=row$p, n=row$n, clr=row$clr,
+      config=cfg, family=fm, tol=tol, seconds=f$elapsed, steps=sum(f$iter),
+      lambdas_capped=capped, ref_capped=ref_capped, max_rel_err=err)
+    cat(sprintf("%-28s %-14s %8.2fs  steps %7d  capped %d/%d  err %.1e%s\n", row$id, cfg, f$elapsed,
+                sum(f$iter), capped, length(f$iter), err, if (ref_capped) "  (reference capped!)" else ""))
   }
 }
 res <- do.call(rbind, res)
 res$lapack <- La_library(); res$blas <- extSoftVersion()[['BLAS']]
 res$runner <- Sys.getenv("BENCH_RUNNER", "local")
+res$spieceasi_ref <- Sys.getenv("BENCH_SPIECEASI_REF", NA)
 dir.create(dirname(out), showWarnings=FALSE, recursive=TRUE)
 write.csv(res, out, row.names=FALSE)

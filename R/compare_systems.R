@@ -17,9 +17,11 @@ compare <- function(prefix) {
   d <- do.call(rbind, lapply(files, read.csv))
   cat("\n==", prefix, "==\n")
 
-  med <- aggregate(seconds ~ runner + id + config, data=d, FUN=median)
-  base <- med[med$config == "baseline", c("runner", "id", "seconds")]
-  names(base)[3] <- "base_seconds"
+  # speedups are within a family (default vs compositional are different estimators)
+  if (is.null(d$family)) d$family <- "default"
+  med <- aggregate(seconds ~ runner + id + family + config, data=d, FUN=median)
+  base <- med[med$config %in% c("baseline", "comp_baseline"), c("runner", "id", "family", "seconds")]
+  names(base)[4] <- "base_seconds"
   med <- merge(med, base)
   med$speedup <- med$base_seconds / med$seconds
 
@@ -52,8 +54,8 @@ compare <- function(prefix) {
   # grid: bit-compatible configs must match the baseline; accuracy: no config may be
   # more than 10x less accurate than the baseline at the same tol
   bad <- if (prefix == "grid") d[d$kind == "exact" & d$max_rel_err > 1e-8, ] else {
-    be <- d[d$config == "baseline", c("runner", "id", "max_rel_err")]
-    names(be)[3] <- "base_err"
+    be <- d[d$config %in% c("baseline", "comp_baseline"), c("runner", "id", "family", "max_rel_err")]
+    names(be)[4] <- "base_err"
     dd <- merge(d, be)
     dd[dd$max_rel_err > 10 * dd$base_err + 1e-4, ]
   }

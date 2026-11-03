@@ -40,5 +40,6 @@ for (p in ps) {
 res <- do.call(rbind, res)
 res$lapack <- La_library(); res$blas <- extSoftVersion()[['BLAS']]
 res$runner <- Sys.getenv("BENCH_RUNNER", "local")
+res$spieceasi_ref <- Sys.getenv("BENCH_SPIECEASI_REF", NA)
 dir.create(dirname(out), showWarnings=FALSE, recursive=TRUE)
 write.csv(res, out, row.names=FALSE)
