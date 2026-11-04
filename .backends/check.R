@@ -1,0 +1,10 @@
+cat(La_library(), "|", extSoftVersion()[["BLAS"]], "\n")
+img <- system(paste("vmmap -w", Sys.getpid(), "2>/dev/null | grep -oE '/[^ ]*(lapack|blas|Accelerate|vecLib)[^ ]*' | sort -u"), intern=TRUE)
+cat(img, sep="\n")
+set.seed(1); X <- matrix(rnorm(1e6), 1000); M <- crossprod(X)
+cat("eigen p=1000:", system.time(e <- eigen(M, symmetric=TRUE))[["elapsed"]], "s\n")
+cat("recon err:", max(abs(e$vectors %*% (e$values * t(e$vectors)) - M)) / max(abs(M)), "\n")
+suppressPackageStartupMessages(library(SpiecEasi))
+ns <- asNamespace("SpiecEasi"); S <- (M + t(M))/2/1000
+a <- get(".eigPSDThresh2", ns)(S, 2, 0); b <- get(".eigPSDThreshPartial", ns)(S, 2, 0)
+cat("partial vs full L:", norm(a - b, "F") / norm(a, "F"), "\n")

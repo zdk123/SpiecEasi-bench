@@ -1,3 +1,5 @@
 .Rlib/
 results/raw/
 install*.log
+.backends/*.dylib
+results/suite-*/*.out

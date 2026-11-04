@@ -1,0 +1,19 @@
+#!/bin/bash
+# Run an R script against a chosen LAPACK/BLAS backend without touching the R install.
+# Usage: ./rbench <ref|openblas|accelerate> script.R [args...]
+# The R frontend is a /bin/sh script, and macOS strips DYLD_* from protected binaries,
+# so R's executable is called directly with the environment the frontend would set.
+backend=$1; shift
+script=$1; shift
+here=$(cd "$(dirname "$0")" && pwd)
+export R_HOME=$(Rscript -e 'cat(R.home())')
+export R_SHARE_DIR=$R_HOME/share R_INCLUDE_DIR=$R_HOME/include R_DOC_DIR=$R_HOME/doc R_ARCH=
+export R_LIBS=$here/.Rlib
+export OPENBLAS_NUM_THREADS=${BENCH_THREADS:-1} VECLIB_MAXIMUM_THREADS=${BENCH_THREADS:-1} OMP_NUM_THREADS=${BENCH_THREADS:-1}
+export BENCH_RUNNER=${BENCH_RUNNER:-local-$backend-t${BENCH_THREADS:-1}}
+case $backend in
+  ref) ;;
+  openblas|accelerate) export DYLD_LIBRARY_PATH=$here/.backends/$backend ;;
+  *) echo "unknown backend $backend" >&2; exit 2 ;;
+esac
+exec "$R_HOME/bin/exec/R" --no-echo --no-restore --file="$script" --args "$@"
