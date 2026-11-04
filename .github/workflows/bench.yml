@@ -3,14 +3,15 @@ name: slr-bench
 on:
   workflow_dispatch:
     inputs:
+      repo:
+        description: GitHub repo to install SpiecEasi from (owner/name)
+        default: zdk123/SpiecEasi
       ref:
         description: SpiecEasi git ref to benchmark
         default: perf/slr-admm
       max_p:
         description: Largest p in the grid
         default: '300'
-  schedule:
-    - cron: '0 6 * * *'   # nightly against devel
 
 jobs:
   bench:
@@ -29,8 +30,10 @@ jobs:
     env:
       BENCH_RUNNER: ${{ matrix.name }}
       BENCH_THREADS: '1'
-      SPIECEASI_REF: ${{ github.event.inputs.ref || 'devel' }}
-      MAX_P: ${{ github.event.inputs.max_p || '300' }}
+      SPIECEASI_REPO: ${{ github.event.inputs.repo }}
+      SPIECEASI_REF: ${{ github.event.inputs.ref }}
+      MAX_P: ${{ github.event.inputs.max_p }}
+      BENCH_SPIECEASI_REF: ${{ github.event.inputs.ref }}
     steps:
       - uses: actions/checkout@v4
 
@@ -64,7 +67,7 @@ jobs:
         run: |
           install.packages(c("remotes", "BiocManager", "bench", "RhpcBLASctl", "pulsar"))
           BiocManager::install("phyloseq", update = FALSE, ask = FALSE)
-          remotes::install_github("zdk123/SpiecEasi", ref = Sys.getenv("SPIECEASI_REF"), upgrade = "never")
+          remotes::install_github(Sys.getenv("SPIECEASI_REPO"), ref = Sys.getenv("SPIECEASI_REF"), upgrade = "never")
         shell: Rscript {0}
 
       - name: Record system
