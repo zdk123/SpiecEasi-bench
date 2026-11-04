@@ -34,6 +34,7 @@ jobs:
       SPIECEASI_REF: ${{ github.event.inputs.ref }}
       MAX_P: ${{ github.event.inputs.max_p }}
       BENCH_SPIECEASI_REF: ${{ github.event.inputs.ref }}
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 

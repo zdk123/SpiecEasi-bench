@@ -57,6 +57,18 @@ tol 1e-6 relative to the same backend's baseline:
 | + Anderson acceleration | 2.07x | 3.6x fewer |
 | + sparse-first lambda path | 2.73x (1.85-4.24x) | 4.0x fewer |
 
+The two p = 1000 cases (n = 500 and n = 5000, reference LAPACK only, in
+`accuracy-p1000-ref-t1.csv`) gain more: 1.6x from the kernels, 2.5-3.2x with
+Anderson, and 4.3-5.4x with everything on. The baseline takes 866 s and 977 s;
+the full configuration takes 203 s and 182 s.
+
+The warm-start experiments (`warmstart-*.csv`) found nothing worth enabling by
+default. Thresholded warm starts and carrying the Anderson history along the path
+save at most a few percent of steps. Warm-starting StARS subsamples saves 10-23%
+of steps at the default tol, but it shifts the stability curve by up to 0.09, and
+the saving disappears at tight tol. Warm-starting across ranks is faster for some
+r and slower for others, and sometimes less accurate.
+
 Backend choice barely matters at p <= 300 on this machine; at p = 2000 a
 4-thread OpenBLAS halves the eigensolver time.
 
