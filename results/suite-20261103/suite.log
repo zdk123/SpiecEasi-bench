@@ -1,0 +1,26 @@
+SpiecEasi d8f1095 on Apple M1
+2026-11-03 19:06:27 START kernels ref t1  load: { 3.05 7.06 9.30 }
+2026-11-03 19:07:33 END   kernels ref t1  status 0  load: { 4.39 6.51 8.90 }
+2026-11-03 19:07:33 START kernels openblas t1  load: { 4.39 6.51 8.90 }
+2026-11-03 19:08:39 END   kernels openblas t1  status 0  load: { 4.02 6.02 8.54 }
+2026-11-03 19:08:39 START kernels accelerate t1  load: { 4.02 6.02 8.54 }
+2026-11-03 19:09:30 END   kernels accelerate t1  status 0  load: { 3.70 5.59 8.24 }
+2026-11-03 19:09:30 START kernels ref t4  load: { 3.70 5.59 8.24 }
+2026-11-03 19:10:12 END   kernels ref t4  status 0  load: { 4.03 5.45 8.06 }
+2026-11-03 19:10:12 START kernels openblas t4  load: { 4.03 5.45 8.06 }
+2026-11-03 19:10:54 END   kernels openblas t4  status 0  load: { 4.44 5.34 7.88 }
+2026-11-03 19:10:54 START kernels accelerate t4  load: { 4.44 5.34 7.88 }
+2026-11-03 19:11:52 END   kernels accelerate t4  status 0  load: { 4.08 5.05 7.61 }
+2026-11-03 19:11:52 START accuracy ref t1  load: { 4.08 5.05 7.61 }
+2026-11-03 20:35:28 END   accuracy ref t1  status 0  load: { 1.17 1.28 1.38 }
+2026-11-03 20:35:28 START accuracy openblas t1  load: { 1.17 1.28 1.38 }
+2026-11-03 22:00:14 END   accuracy openblas t1  status 0  load: { 2.90 2.47 2.20 }
+2026-11-03 22:00:14 START accuracy accelerate t1  load: { 2.90 2.47 2.20 }
+2026-11-03 23:08:43 END   accuracy accelerate t1  status 0  load: { 2.26 2.46 2.27 }
+2026-11-03 23:08:43 START grid ref t1  load: { 2.26 2.46 2.27 }
+2026-11-03 23:13:37 END   grid ref t1  status 0  load: { 2.77 2.51 2.33 }
+2026-11-03 23:13:37 START grid openblas t1  load: { 2.77 2.51 2.33 }
+2026-11-03 23:18:32 END   grid openblas t1  status 0  load: { 2.79 2.48 2.35 }
+2026-11-03 23:18:32 START grid accelerate t1  load: { 2.79 2.48 2.35 }
+2026-11-03 23:22:14 END   grid accelerate t1  status 0  load: { 2.03 2.22 2.26 }
+2026-11-03 23:22:14 DONE
