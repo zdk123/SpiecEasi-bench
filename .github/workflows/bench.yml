@@ -65,7 +65,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "BiocManager", "bench", "RhpcBLASctl", "pulsar"))
+          install.packages(c("remotes", "BiocManager", "bench", "RhpcBLASctl"))
+          remotes::install_github("zdk123/pulsar", upgrade = "never")  # archived on CRAN 2026-08-22
           BiocManager::install("phyloseq", update = FALSE, ask = FALSE)
           remotes::install_github(Sys.getenv("SPIECEASI_REPO"), ref = Sys.getenv("SPIECEASI_REF"), upgrade = "never")
         shell: Rscript {0}
