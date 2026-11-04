@@ -53,7 +53,9 @@ jobs:
             mkl)
               sudo apt-get update && sudo apt-get install -y intel-mkl
               sudo update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so
-              sudo update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so ;;
+              sudo update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so
+              # libmkl_rt defaults to Intel OpenMP, which clashes with packages built against GNU OpenMP
+              echo "MKL_THREADING_LAYER=GNU" >> "$GITHUB_ENV" ;;
             *)
               # the runner image defaults to OpenBLAS; select netlib reference
               sudo apt-get update && sudo apt-get install -y libblas3 liblapack3
