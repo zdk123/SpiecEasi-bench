@@ -84,6 +84,11 @@ jobs:
           print(sessionInfo()); print(La_library()); print(extSoftVersion())
         shell: Rscript {0}
 
+      - name: Diagnose sqrtmat_sympd (MKL)
+        if: matrix.blas == 'mkl'
+        run: Rscript R/diag_sqrtmat.R
+        continue-on-error: true
+
       - name: Kernel microbenchmarks
         run: Rscript R/kernels.R "results/kernels-${{ matrix.name }}.csv"
 
