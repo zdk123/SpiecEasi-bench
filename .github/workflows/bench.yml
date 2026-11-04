@@ -22,11 +22,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: ubuntu-reference, os: ubuntu-latest,  blas: reference }
+          # netlib reference BLAS is too slow for the full accuracy grid in 340 min
+          - { name: ubuntu-reference, os: ubuntu-latest,  blas: reference, acc_p: '100' }
           - { name: ubuntu-openblas,  os: ubuntu-latest,  blas: openblas }
           - { name: ubuntu-mkl,       os: ubuntu-latest,  blas: mkl }
           - { name: macos-accelerate, os: macos-latest,   blas: accelerate }
-          - { name: windows-reference, os: windows-latest, blas: reference }
+          - { name: windows-reference, os: windows-latest, blas: reference, acc_p: '100' }
     env:
       BENCH_RUNNER: ${{ matrix.name }}
       BENCH_THREADS: '1'
@@ -99,16 +100,20 @@ jobs:
         shell: bash
 
       - name: Time to fixed accuracy
-        run: Rscript R/accuracy_grid.R "$MAX_P" 1e-6 "results/accuracy-${{ matrix.name }}.csv"
+        run: Rscript R/accuracy_grid.R "${ACC_P:-$MAX_P}" 1e-6 "results/accuracy-${{ matrix.name }}.csv"
+        env:
+          ACC_P: ${{ matrix.acc_p }}
         shell: bash
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: results-${{ matrix.name }}
           path: results/
 
   compare:
     needs: bench
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

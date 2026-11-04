@@ -24,6 +24,9 @@ compare <- function(prefix) {
   names(base)[4] <- "base_seconds"
   med <- merge(med, base)
   med$speedup <- med$base_seconds / med$seconds
+  # summarise over the cases every system finished (some run a smaller grid)
+  common <- Reduce(intersect, split(med$id, med$runner))
+  med <- med[med$id %in% common, ]
 
   sp <- aggregate(speedup ~ runner + config, data=med, FUN=function(x) exp(mean(log(x))))
   wide <- reshape(sp, idvar="config", timevar="runner", direction="wide")
