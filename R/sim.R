@@ -41,7 +41,7 @@ sim_case <- function(p, n, r=2, kappa=100, graph='band', tied=FALSE, seed=1,
 grid_cases <- function(max_p=Inf) {
   rows <- rbind(
     data.frame(case='n<p',      p=c(100, 300, 1000), n=NA, kappa=100, graph='band', tied=FALSE, mode='rank'),
-    data.frame(case='n>p',      p=c(50, 100, 300),   n=NA, kappa=100, graph='band', tied=FALSE, mode='rank'),
+    data.frame(case='n>p',      p=c(50, 100, 300, 1000), n=NA, kappa=100, graph='band', tied=FALSE, mode='rank'),
     data.frame(case='n>p 20x',  p=100,               n=2000, kappa=100, graph='band', tied=FALSE, mode='rank'),
     data.frame(case='ill 1e4',  p=c(100, 300),       n=NA, kappa=1e4, graph='band', tied=FALSE, mode='rank'),
     data.frame(case='ill 1e6',  p=c(100, 300),       n=NA, kappa=1e6, graph='band', tied=FALSE, mode='rank'),

@@ -46,6 +46,7 @@ fit <- function(X, row, opts) {
 
 cases <- grid_cases(max_p)
 cases <- cases[!duplicated(cases$case) | cases$p > 100, ]
+if (nzchar(Sys.getenv("BENCH_CASES"))) cases <- cases[grepl(Sys.getenv("BENCH_CASES"), cases$id), ]  # regex on id
 res <- list()
 for (ci in seq_len(nrow(cases))) {
   row <- cases[ci, ]
