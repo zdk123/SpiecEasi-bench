@@ -24,3 +24,13 @@ SpiecEasi d8f1095 on Apple M1
 2026-11-03 23:18:32 START grid accelerate t1  load: { 2.79 2.48 2.35 }
 2026-11-03 23:22:14 END   grid accelerate t1  status 0  load: { 2.03 2.22 2.26 }
 2026-11-03 23:22:14 DONE
+2026-11-04 00:00:02 START warmstart ref t1  load: { 1.08 1.15 1.22 }
+2026-11-04 00:08:55 END   warmstart ref t1  status 0  load: { 2.27 1.99 1.58 }
+2026-11-04 00:08:55 START accuracy-p1000 ref t1  load: { 2.27 1.99 1.58 }
+ NOTE pulsar test-deps install + tests (nice 19) started  load: 
+2026-11-04 00:16:01 NOTE pulsar test-deps install + tests (nice 19) started  load: { 1.95 2.22 1.90 }
+2026-11-04 00:20:19 NOTE pulsar R CMD check --as-cran (nice 19) started  load: { 2.88 2.87 2.30 }
+2026-11-04 00:20:20 NOTE pulsar check done  load: { 2.88 2.87 2.30 }
+2026-11-04 00:22:17 NOTE pulsar R CMD check --as-cran (nice 19) restarted  load: { 3.03 2.92 2.39 }
+2026-11-04 00:23:38 NOTE pulsar check done  load: { 2.59 2.82 2.40 }
+2026-11-04 01:42:18 END   accuracy-p1000 ref t1  status 0  load: { 2.79 2.40 2.15 }
