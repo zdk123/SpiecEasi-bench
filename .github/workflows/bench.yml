@@ -109,7 +109,7 @@ jobs:
         if: always()
         with:
           name: results-${{ matrix.name }}
-          path: results/
+          path: results/*-${{ matrix.name }}.csv
 
   compare:
     needs: bench
@@ -118,13 +118,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
+      # a separate directory: the checkout's results/ holds older local runs
       - uses: actions/download-artifact@v4
         with:
-          path: results
+          path: ci-results
+          pattern: results-*
           merge-multiple: true
       - name: Rank-order comparison across systems
-        run: Rscript R/compare_systems.R results
+        run: Rscript R/compare_systems.R ci-results
       - uses: actions/upload-artifact@v4
         with:
           name: comparison
-          path: results/comparison*
+          path: ci-results/comparison*
