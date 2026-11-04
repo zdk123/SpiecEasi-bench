@@ -54,15 +54,21 @@ jobs:
               sudo apt-get update && sudo apt-get install -y intel-mkl
               sudo update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so
               sudo update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so ;;
-            *) echo "reference BLAS/LAPACK" ;;
+            *)
+              # the runner image defaults to OpenBLAS; select netlib reference
+              sudo apt-get update && sudo apt-get install -y libblas3 liblapack3
+              sudo update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/blas/libblas.so.3
+              sudo update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3 ;;
           esac
+          sudo apt-get install -y libglpk-dev  # igraph binaries link libglpk
 
       - name: Select BLAS/LAPACK (macOS Accelerate)
         if: matrix.blas == 'accelerate'
         run: |
           RLIB=$(Rscript -e 'cat(R.home("lib"))')
-          ln -sf /System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Versions/Current/libBLAS.dylib "$RLIB/libRblas.dylib"
-          ln -sf "$RLIB/libRlapack.vecLib.dylib" "$RLIB/libRlapack.dylib" 2>/dev/null || true
+          # vecLib lives only in the dyld shared cache; CRAN R ships shims for it
+          cd "$RLIB" && ln -sf libRblas.vecLib.dylib libRblas.dylib
+          if [ -f libRlapack.vecLib.dylib ]; then ln -sf libRlapack.vecLib.dylib libRlapack.dylib; fi
 
       - name: Install dependencies
         run: |
@@ -70,6 +76,7 @@ jobs:
           remotes::install_github("zdk123/pulsar", upgrade = "never")  # archived on CRAN 2026-08-22
           BiocManager::install("phyloseq", update = FALSE, ask = FALSE)
           remotes::install_github(Sys.getenv("SPIECEASI_REPO"), ref = Sys.getenv("SPIECEASI_REF"), upgrade = "never")
+          library(SpiecEasi)  # install_github only warns on failure
         shell: Rscript {0}
 
       - name: Record system
